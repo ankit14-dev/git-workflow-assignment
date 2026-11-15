@@ -1,0 +1,202 @@
+===============================================================================
+ GIT COMMANDS USED IN THE ASSIGNMENT  (Question 1: Git & GitHub Workflow)
+ Repository: https://github.com/ankit14-dev/git-workflow-assignment
+===============================================================================
+Commands are listed in the order they were run. Shell commands (mkdir, cd,
+ls, cat, grep) and the GitHub CLI command (gh) are marked as such.
+
+-------------------------------------------------------------------------------
+STEP 1 - LOCAL REPOSITORY SETUP
+-------------------------------------------------------------------------------
+mkdir git-workflow-assignment                                   [shell]
+    Creates the project folder on the local machine.
+
+cd git-workflow-assignment                                      [shell]
+    Moves into the project folder (index.html and about.html are created here).
+
+ls -l                                                           [shell]
+    Lists the files in the folder to confirm both HTML files exist.
+
+git init -b main
+    Initialises an empty Git repository (creates the hidden .git folder) and
+    names the first branch "main".
+
+git status
+    Shows the state of the working tree; here both HTML files are untracked.
+
+-------------------------------------------------------------------------------
+STEP 2 - GIT WORKFLOW EXECUTION
+-------------------------------------------------------------------------------
+--- 2.1 Record the initial state ---
+git add index.html about.html
+    Stages the two files, i.e. adds them to the index for the next commit.
+
+git commit -m "Initial commit: add index.html and about.html"
+    Records the staged snapshot as the first (root) commit with a message.
+
+--- 2.2 Modify a file and make a second commit ---
+git status --short
+    Short status; "M about.html" means the file is modified but not staged.
+
+git diff
+    Shows the exact lines changed in the working tree compared with the index.
+
+git add about.html
+    Stages the modified about.html.
+
+git commit -m "Update about.html: add My Skills section"
+    Creates the second commit on main.
+
+--- 2.3 Create a branch named feature ---
+git branch feature
+    Creates a new branch called "feature" pointing at the current commit.
+
+git branch
+    Lists local branches; the "*" marks the branch that is checked out.
+
+--- 2.4 Switch to the feature branch ---
+git switch feature
+    Moves HEAD to the feature branch (older equivalent: git checkout feature).
+
+--- 2.5 Change a file and commit on feature ---
+git diff
+    Reviews the new contact section and footer added to index.html.
+
+git add index.html
+    Stages the change on the feature branch.
+
+git commit -m "Add contact section and footer to index.html"
+    Commits the change; only the feature branch moves forward.
+
+git log --oneline --graph --all --decorate
+    Shows a one-line-per-commit graph of all branches with branch labels,
+    confirming feature is one commit ahead of main.
+
+--- 2.6 Switch back to main ---
+git switch main
+    Returns to the main branch (index.html goes back to main's version).
+
+--- 2.7 Merge feature into main ---
+git merge --no-ff feature -m "Merge branch 'feature' into main"
+    Merges feature into main. --no-ff forces a merge commit even though a
+    fast-forward was possible, so the branch activity stays visible in history.
+
+git branch -v
+    Lists branches with the latest commit on each.
+
+--- 2.8 Display the commit history ---
+git log --oneline --graph --all --decorate
+    Compact graph of the whole history, showing the branch and the merge.
+
+git log --stat
+    Full history (hash, author, date, message) plus the files and number of
+    lines changed in each commit.
+
+-------------------------------------------------------------------------------
+STEP 3 - .gitignore IMPLEMENTATION
+-------------------------------------------------------------------------------
+git status
+    Run after creating debug.log and temp/cache.tmp; both appear as untracked
+    because no ignore rules exist yet.
+
+cat .gitignore                                                  [shell]
+    Displays the new .gitignore, which contains the rules "*.log" and "temp/".
+
+git status
+    Run again; only .gitignore is listed, so debug.log and temp/ are ignored.
+
+git check-ignore -v debug.log temp/cache.tmp
+    Prints the .gitignore file, line number and rule that ignores each path.
+
+git add .gitignore
+    Stages the .gitignore file.
+
+git commit -m "Add .gitignore to ignore .log files and temp/ folder"
+    Commits the ignore rules so they apply for everyone who clones the repo.
+
+-------------------------------------------------------------------------------
+STEP 4 - UNDO OPERATION
+-------------------------------------------------------------------------------
+git diff
+    Shows the extra "EXPERIMENTAL" banner line added to index.html.
+
+git commit -am "Add experimental banner to index.html"
+    -a stages every modified tracked file and commits in one step; this is the
+    additional commit that is then undone.
+
+git log --oneline -3
+    Shows the last three commits; the experimental commit is at the top.
+
+git revert HEAD --no-edit
+    Undoes the last commit by creating a NEW commit that applies the opposite
+    change. History is not rewritten, so it is safe for pushed/shared branches.
+    --no-edit accepts the default message 'Revert "..."'.
+
+git log --oneline --graph --decorate -6
+    Shows the experimental commit followed by its revert commit.
+
+git show --stat HEAD
+    Shows details of the revert commit ("This reverts commit c55b624...") and
+    that it removed one line from index.html.
+
+grep -c "EXPERIMENTAL" index.html                               [shell]
+    Counts lines containing the banner text; 0 proves it has been removed.
+
+git diff HEAD~2 HEAD --stat
+    Compares the commit before the experiment with the current commit; no
+    output means the files are identical, i.e. the undo was complete.
+
+git status
+    Confirms the working tree is clean after the undo.
+
+(Alternative, not used here) git reset --soft HEAD~1  /  git reset --hard HEAD~1
+    Moves the branch pointer back one commit and deletes it from history
+    (--soft keeps the changes staged, --hard discards them). It rewrites
+    history, so git revert was chosen to keep the undo visible on GitHub.
+
+-------------------------------------------------------------------------------
+STEP 5 - GITHUB INTEGRATION
+-------------------------------------------------------------------------------
+gh repo create git-workflow-assignment --public --description "..."  [GitHub CLI]
+    Creates an empty PUBLIC repository on GitHub (same as "New repository" on
+    github.com without a README), after the local repository already existed.
+
+git remote add origin https://github.com/ankit14-dev/git-workflow-assignment.git
+    Connects the local repository to GitHub under the remote name "origin".
+
+git remote -v
+    Lists the remotes and their fetch/push URLs to verify the connection.
+
+git push -u origin main
+    Uploads the main branch and all its commits to GitHub; -u sets origin/main
+    as the upstream so later "git push"/"git pull" need no arguments.
+
+git push -u origin feature
+    Uploads the feature branch too, so the branch is also visible on GitHub.
+
+git branch -a -vv
+    Lists local and remote-tracking branches with their upstream, confirming
+    main -> origin/main and feature -> origin/feature.
+
+git log --oneline --graph --all --decorate
+    Shows that origin/main and origin/feature point to the same commits as the
+    local branches (everything is pushed).
+
+-------------------------------------------------------------------------------
+STEP 6 - COMMAND DOCUMENTATION FILE
+-------------------------------------------------------------------------------
+git add git_commands.txt
+    Stages this documentation file.
+
+git commit -m "Add git_commands.txt documenting all commands used"
+    Commits the documentation file to main.
+
+git push
+    Pushes the new commit to the upstream branch (origin/main) set earlier.
+
+git log --oneline --graph --all --decorate
+    Final view of the complete history, matching the history shown on GitHub.
+
+git status
+    Confirms the branch is up to date with origin/main and nothing is pending.
+===============================================================================
